@@ -1,18 +1,18 @@
 import { Box, useMediaQuery } from "@mui/material";
-import Row1 from "./Row1";
-import Row2 from "./Row2";
-import Row3 from "./Row3";
+import Column1 from "./Column1";
+import Column2 from "./Column2";
+import Column3 from "./Column3";
 
 const gridTemplateLargeScreens = `
-  "a b j"
-  "a b j"
-  "a b j"
-  "a b f"
-  "d e f"
-  "d e c"
-  "d e c"
-  "d h c"
-  "d h c"
+  "a d f"
+  "a d f"
+  "a d f"
+  "b d f"
+  "b e f"
+  "b e f"
+  "c e f"
+  "c g f"
+  "c g f"
 `;
 const gridTemplateSmallScreens = `
   "a"
@@ -40,7 +40,7 @@ const gridTemplateSmallScreens = `
   "j"
 `;
 
-const DashBoard = () => {
+const Controlls = () => {
   const isAboveMediumScreens = useMediaQuery("(min-width: 1000px)");
   return (
     <Box
@@ -62,11 +62,12 @@ const DashBoard = () => {
             }
       }
     >
-      <Row1 />
-      <Row2 />
-      <Row3 />
+      <Column1 />
+      <Column2 />
+      <Column3 />
+
     </Box>
   );
 };
 
-export default DashBoard;
+export default Controlls;

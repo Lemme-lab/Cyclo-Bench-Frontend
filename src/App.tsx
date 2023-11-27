@@ -5,7 +5,8 @@ import { useMemo } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { themeSettings } from "./theme";
 import Navbar from "@/scenes/navbar";
-import DashBoard from "./scenes/dashboard";
+import Dashboard from "@/scenes/dashboard";
+import Controlls from "@/scenes/controlls";
 
 
 function App() {
@@ -18,8 +19,8 @@ function App() {
           <Box width="100%" height="100%" padding="1rem 2rem 4rem 2rem">
             <Navbar />
             <Routes>
-              <Route path="/" element={<></>} />
-              <Route path="/predictions" element={<div></div>} />
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/controlls" element={<Controlls/>} />
             </Routes>
           </Box>
         </ThemeProvider>

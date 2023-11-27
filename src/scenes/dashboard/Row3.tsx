@@ -9,51 +9,81 @@ import {
 import { Box, Typography, useTheme } from "@mui/material";
 import { DataGrid, GridCellParams } from "@mui/x-data-grid";
 import React, { useMemo } from "react";
-import { Cell, Pie, PieChart } from "recharts";
+import {
+  Cell,
+  Pie,
+  PieChart,
+  Tooltip,
+  CartesianGrid,
+  LineChart,
+  AreaChart,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  Line,
+  ScatterChart,
+  Scatter,
+  ZAxis,
+  BarChart,
+  Bar,
+  Area,
+} from "recharts";
+
+// Static data for the DataGrid
+const staticTransactionData = [
+  { id: 1, Name: "Thrust", Data: [50,12,3], timestamp: "2023-11-26T12:30:00Z" },
+  { id: 2, Name: "Torgue", Data: 75, timestamp: "2023-11-26T12:45:00Z" },
+  { id: 3, Name: "Torgue", Data: 30, timestamp: "2023-11-26T13:00:00Z" },
+  { id: 4, Name: "WingPosition", Data: 45, timestamp: "2023-11-26T13:15:00Z" },
+  // Add more data as needed
+];
+
+// Static data for the pie chart
+const staticPieChartData = [
+  { name: "Category 1", value: 30 },
+  { name: "Category 2", value: 20 },
+  { name: "Category 3", value: 50 },
+  // Add more data as needed
+];
 
 const Row3 = () => {
   const { palette } = useTheme();
   const pieColors = [palette.primary[800], palette.primary[500]];
 
-  const { data: kpiData } = useGetKpisQuery();
-  const { data: productData } = useGetProductsQuery();
-  const { data: transactionData } = useGetTransactionsQuery();
-
+  // Fake data for the pie chart
   const pieChartData = useMemo(() => {
-    if (kpiData) {
-      const totalExpenses = kpiData[0].totalExpenses;
-      return Object.entries(kpiData[0].expensesByCategory).map(
-        ([key, value]) => {
-          return [
-            {
-              name: key,
-              value: value,
-            },
-            {
-              name: `${key} of Total`,
-              value: totalExpenses - value,
-            },
-          ];
-        }
-      );
-    }
-  }, [kpiData]);
+    return [
+      [
+        { name: "X-Force", value: 25 },
+        { name: "", value: 35 },
+      ],
+      [
+        { name: "Y-Force", value: 15 },
+        { name: "", value: 35 },
+      ],
+      [
+        { name: "Z-Force", value: 10 },
+        { name: "", value: 35 },
+      ],
+      // Add more data as needed
+    ];
+  }, []);
 
   const productColumns = [
     {
-      field: "_id",
+      field: "id",
       headerName: "id",
       flex: 1,
     },
     {
-      field: "expense",
-      headerName: "Expense",
+      field: "name",
+      headerName: "name",
       flex: 0.5,
       renderCell: (params: GridCellParams) => `$${params.value}`,
     },
     {
-      field: "price",
-      headerName: "Price",
+      field: "data",
+      headerName: "data",
       flex: 0.5,
       renderCell: (params: GridCellParams) => `$${params.value}`,
     },
@@ -61,70 +91,35 @@ const Row3 = () => {
 
   const transactionColumns = [
     {
-      field: "_id",
+      field: "id",
       headerName: "id",
       flex: 1,
     },
     {
-      field: "buyer",
-      headerName: "Buyer",
+      field: "Name",
+      headerName: "Name",
       flex: 0.67,
     },
     {
-      field: "amount",
-      headerName: "Amount",
+      field: "Data",
+      headerName: "Data",
       flex: 0.35,
-      renderCell: (params: GridCellParams) => `$${params.value}`,
+      renderCell: (params: GridCellParams) => `${params.value}`,
     },
     {
-      field: "productIds",
-      headerName: "Count",
+      field: "timestamp",
+      headerName: "Timestamp",
       flex: 0.1,
-      renderCell: (params: GridCellParams) =>
-        (params.value as Array<string>).length,
+      renderCell: (params: GridCellParams) => params.value,
     },
   ];
 
   return (
     <>
-      <DashboardBox gridArea="g">
+      <DashboardBox gridArea="j">
         <BoxHeader
-          title="List of Products"
-          sideText={`${productData?.length} products`}
-        />
-        <Box
-          mt="0.5rem"
-          p="0 0.5rem"
-          height="75%"
-          sx={{
-            "& .MuiDataGrid-root": {
-              color: palette.grey[300],
-              border: "none",
-            },
-            "& .MuiDataGrid-cell": {
-              borderBottom: `1px solid ${palette.grey[800]} !important`,
-            },
-            "& .MuiDataGrid-columnHeaders": {
-              borderBottom: `1px solid ${palette.grey[800]} !important`,
-            },
-            "& .MuiDataGrid-columnSeparator": {
-              visibility: "hidden",
-            },
-          }}
-        >
-          <DataGrid
-            columnHeaderHeight={25}
-            rowHeight={35}
-            hideFooter={true}
-            rows={productData || []}
-            columns={productColumns}
-          />
-        </Box>
-      </DashboardBox>
-      <DashboardBox gridArea="h">
-        <BoxHeader
-          title="Recent Orders"
-          sideText={`${transactionData?.length} latest transactions`}
+          title="Recent Data"
+          sideText={` latest Data`}
         />
         <Box
           mt="1rem"
@@ -150,13 +145,12 @@ const Row3 = () => {
             columnHeaderHeight={25}
             rowHeight={35}
             hideFooter={true}
-            rows={transactionData || []}
+            rows={staticTransactionData}
             columns={transactionColumns}
           />
         </Box>
       </DashboardBox>
-      <DashboardBox gridArea="i">
-        <BoxHeader title="Expense Breakdown By Category" sideText="+4%" />
+      <DashboardBox gridArea="h">
         <FlexBetween mt="0.5rem" gap="0.5rem" p="0 1rem" textAlign="center">
           {pieChartData?.map((data, i) => (
             <Box key={`${data[0].name}-${i}`}>
@@ -178,31 +172,6 @@ const Row3 = () => {
             </Box>
           ))}
         </FlexBetween>
-      </DashboardBox>
-      <DashboardBox gridArea="j">
-        <BoxHeader
-          title="Overall Summary and Explanation Data"
-          sideText="+15%"
-        />
-        <Box
-          height="15px"
-          margin="1.25rem 1rem 0.4rem 1rem"
-          bgcolor={palette.primary[800]}
-          borderRadius="1rem"
-        >
-          <Box
-            height="15px"
-            bgcolor={palette.primary[600]}
-            borderRadius="1rem"
-            width="40%"
-          ></Box>
-        </Box>
-        <Typography margin="0 1rem" variant="h6">
-          Orci aliquam enim vel diam. Venenatis euismod id donec mus lorem etiam
-          ullamcorper odio sed. Ipsum non sed gravida etiam urna egestas
-          molestie volutpat et. Malesuada quis pretium aliquet lacinia ornare
-          sed. In volutpat nullam at est id cum pulvinar nunc.
-        </Typography>
       </DashboardBox>
     </>
   );

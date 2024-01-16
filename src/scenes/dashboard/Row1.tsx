@@ -1,86 +1,159 @@
+import React, { useEffect, useMemo, useState } from "react";
 import BoxHeader from "@/components/BoxHeader";
 import DashboardBox from "@/components/DashboardBox";
-import { useGetKpisQuery } from "@/state/api";
+import {
+  useGetTorqueQuery,
+  useGetThrustQuery,
+  useGetRotorSpeedQuery,
+  useGetControllDataQuery
+} from "@/state/api";
 import { useTheme } from "@mui/material";
-import { useMemo } from "react";
 import {
   ResponsiveContainer,
   CartesianGrid,
   BarChart,
-  Bar,
   LineChart,
   XAxis,
   YAxis,
   Tooltip,
   Legend,
   Line,
+  Bar,
 } from "recharts";
 
 const Row1 = () => {
   const { palette } = useTheme();
+  const [updateCounter, setUpdateCounter] = useState(0);
+
+  const {
+    data: controllData,
+    error: controllError,
+    refetch: refetchControll,
+  } = useGetControllDataQuery();
+
+  const {
+    data: thrustData,
+    error: thrustError,
+    refetch: refetchThrust,
+  } = useGetThrustQuery();
+
+  const {
+    data: rotorData,
+    error: rotorError,
+    refetch: refetchRotor,
+  } = useGetRotorSpeedQuery();
+
+  const {
+    data: torqueData,
+    error: torqueError,
+    refetch: refetchTorque,
+  } = useGetTorqueQuery();
+
+  const shouldUpdateCharts = useMemo(
+    () => !!torqueData || !!thrustData || !!rotorData,
+    [torqueData, thrustData, rotorData]
+  );
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Refetch data from APIs
+        await Promise.all([refetchTorque(), refetchThrust(), refetchRotor()]);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    const intervalId = setInterval(() => {
+      fetchData();
+      setUpdateCounter((prevCounter) => prevCounter + 1);
+    }, 1000);
+
+    // Initial fetch
+    fetchData();
+
+    return () => clearInterval(intervalId);
+  }, [refetchTorque, refetchThrust, refetchRotor]);
+
+  useEffect(() => {
+    console.log("Torque Data:", torqueData);
+    console.log("Thrust Data:", thrustData);
+    console.log("Rotor Data:", rotorData);
+    console.log("Update Counter:", updateCounter);
+    console.log("ControllData", controllData);
+  }, [torqueData, thrustData, rotorData, updateCounter]);
+  
 
 
-  // Fake data for each chart
-const fakeDataTorgueThrust = [
-  { month: "Jan", torgue: 50, thrust: 30 },
-  { month: "Feb", torgue: 65, thrust: 42 },
-  { month: "Mar", torgue: 80, thrust: 55 },
-  { month: "Apr", torgue: 60, thrust: 35 },
-  { month: "May", torgue: 75, thrust: 48 },
-  { month: "Jun", torgue: 90, thrust: 60 },
-  { month: "Jul", torgue: 70, thrust: 40 },
-  { month: "Aug", torgue: 85, thrust: 52 },
-  { month: "Sep", torgue: 100, thrust: 65 },
-  { month: "Oct", torgue: 75, thrust: 45 },
-  { month: "Nov", torgue: 90, thrust: 58 },
-  { month: "Dec", torgue: 105, thrust: 70 },
-];
+  const combinedData = useMemo(() => {
+    if (torqueError || thrustError) {
+      console.error("Error fetching data:", torqueError || thrustError);
+      return [];
+    }
 
-const fakeDataThrustRotorSpeed = [
-  { month: "Jan", thrust: 30, 'rotor speed': 20 },
-  { month: "Feb", thrust: 45, 'rotor speed': 32 },
-  { month: "Mar", thrust: 60, 'rotor speed': 45 },
-  { month: "Apr", thrust: 40, 'rotor speed': 25 },
-  { month: "May", thrust: 55, 'rotor speed': 38 },
-  { month: "Jun", thrust: 70, 'rotor speed': 50 },
-  { month: "Jul", thrust: 50, 'rotor speed': 30 },
-  { month: "Aug", thrust: 65, 'rotor speed': 42 },
-  { month: "Sep", thrust: 80, 'rotor speed': 55 },
-  { month: "Oct", thrust: 55, 'rotor speed': 35 },
-  { month: "Nov", thrust: 70, 'rotor speed': 48 },
-  { month: "Dec", thrust: 85, 'rotor speed': 60 },
-];
+    if (!torqueData || !thrustData) return [];
 
-const fakeDataTestRoutine = [
-  { month: "Jan", revenue: 200 },
-  { month: "Feb", revenue: 250 },
-  { month: "Mar", revenue: 300 },
-  { month: "Apr", revenue: 220 },
-  { month: "May", revenue: 270 },
-  { month: "Jun", revenue: 320 },
-  { month: "Jul", revenue: 240 },
-  { month: "Aug", revenue: 290 },
-  { month: "Sep", revenue: 340 },
-  { month: "Oct", revenue: 260 },
-  { month: "Nov", revenue: 310 },
-  { month: "Dec", revenue: 360 },
-];
-
-
-  const { data } = useGetKpisQuery();
-
-  const revenueProfit = useMemo(() => {
-    return (
-      data &&
-      data[0].monthlyData.map(({ month, revenue, expenses }) => {
-        return {
-          name: month.substring(0, 3),
-          revenue: revenue,
-          profit: (revenue - expenses).toFixed(2),
-        };
-      })
+    // Create a map of torqueData based on id for faster lookup
+    const torqueDataMap = new Map(
+      torqueData.map(({ id, torque }) => [id, torque || 0])
     );
-  }, [data]);
+
+    return thrustData.map(({ timeStampManual, id, thrust }) => {
+      const Torque = torqueDataMap.get(id) || 0;
+      const Thrust = thrust.reduce((sum, value) => sum + value, 0);
+
+      return {
+        timeStampManual,
+        Torque,
+        Thrust
+      };
+    });
+  }, [torqueData, thrustData, torqueError, thrustError]);
+
+  const combinedData2 = useMemo(() => {
+    if (rotorError || rotorError) {
+      console.error("Error fetching data:", rotorError || rotorError);
+      return [];
+    }
+
+    if (!rotorData || !thrustData) return [];
+
+    // Create a map of torqueData based on id for faster lookup
+    const rotorSpeedDataMap = new Map(
+      rotorData.map(({ id, rotorSpeed }) => [id, rotorSpeed || 0])
+    );
+
+    console.log(thrustData);
+    console.log(rotorData);
+
+    return thrustData.map(({ timeStampManual, id, thrust }) => {
+      const RotorSpeed = rotorSpeedDataMap.get(id) || 0;
+      const Thrust = thrust.reduce((sum, value) => sum + value, 0);
+
+      return {
+        timeStampManual,
+        RotorSpeed,
+        Thrust
+      };
+    });
+  }, [torqueData, thrustData, torqueError, thrustError]);
+
+const realDataTestRoutine = useMemo(() => {
+  if (!controllData || !controllData.parameters || !controllData.parameters.testRoutine) {
+    return [];
+  }
+
+  console.log("TestRoutine", controllData.parameters.testRoutine);
+
+  return controllData.parameters.testRoutine.map((item, index) => ({
+    id: index,
+    rotorSpeed: item.rotorSpeed,
+  }));
+}, [controllData]);
+
+  
+  
+
 
   return (
     <>
@@ -94,17 +167,17 @@ const fakeDataTestRoutine = [
           <LineChart
             width={500}
             height={400}
-            data={fakeDataTorgueThrust}
+            data={combinedData}
             margin={{
               top: 20,
               right: 0,
               left: -10,
-              bottom: 55,
+              bottom: 55
             }}
           >
             <CartesianGrid vertical={false} stroke={palette.grey[800]} />
             <XAxis
-              dataKey="month"
+              dataKey="timeStampManual"
               tickLine={false}
               style={{ fontSize: "10px" }}
             />
@@ -125,20 +198,26 @@ const fakeDataTestRoutine = [
             <Legend
               height={20}
               wrapperStyle={{
-                margin: "0 0 10px 0",
+                margin: "0 0 10px 0"
               }}
             />
             <Line
               yAxisId="left"
               type="monotone"
-              dataKey="torgue"
+              strokeWidth={2}
+              dataKey="Thrust"
               stroke={palette.tertiary[500]}
+              isAnimationActive={false}
+              dot={false}
             />
             <Line
               yAxisId="right"
               type="monotone"
-              dataKey="thrust"
+              strokeWidth={2}
+              dataKey="Torque"
               stroke={palette.primary.main}
+              isAnimationActive={false}
+              dot={false}
             />
           </LineChart>
         </ResponsiveContainer>
@@ -154,12 +233,12 @@ const fakeDataTestRoutine = [
           <LineChart
             width={500}
             height={400}
-            data={fakeDataThrustRotorSpeed}
+            data={combinedData2}
             margin={{
               top: 20,
               right: 0,
               left: -10,
-              bottom: 55,
+              bottom: 55
             }}
           >
             <CartesianGrid vertical={false} stroke={palette.grey[800]} />
@@ -185,20 +264,26 @@ const fakeDataTestRoutine = [
             <Legend
               height={20}
               wrapperStyle={{
-                margin: "0 0 10px 0",
+                margin: "0 0 10px 0"
               }}
             />
             <Line
               yAxisId="left"
               type="monotone"
-              dataKey="thrust"
+              strokeWidth={2}
+              dataKey="Thrust"
               stroke={palette.tertiary[500]}
+              isAnimationActive={false}
+              dot={false}
             />
             <Line
               yAxisId="right"
               type="monotone"
-              dataKey="rotor speed"
+              strokeWidth={2}
+              dataKey="RotorSpeed"
               stroke={palette.primary.main}
+              isAnimationActive={false}
+              dot={false}
             />
           </LineChart>
         </ResponsiveContainer>
@@ -214,12 +299,12 @@ const fakeDataTestRoutine = [
           <BarChart
             width={500}
             height={300}
-            data={fakeDataTestRoutine}
+            data={realDataTestRoutine}
             margin={{
               top: 17,
               right: 15,
               left: -5,
-              bottom: 58,
+              bottom: 58
             }}
           >
             <defs>
@@ -238,7 +323,7 @@ const fakeDataTestRoutine = [
             </defs>
             <CartesianGrid vertical={false} stroke={palette.grey[800]} />
             <XAxis
-              dataKey="month"
+              dataKey="id"
               axisLine={false}
               tickLine={false}
               style={{ fontSize: "10px" }}
@@ -249,7 +334,7 @@ const fakeDataTestRoutine = [
               style={{ fontSize: "10px" }}
             />
             <Tooltip />
-            <Bar dataKey="revenue" fill="url(#colorRevenue)" />
+            <Bar dataKey="rotorSpeed" fill="url(#colorRevenue)" />
           </BarChart>
         </ResponsiveContainer>
       </DashboardBox>

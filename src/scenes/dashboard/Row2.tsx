@@ -1,7 +1,12 @@
+import React, { useEffect, useMemo, useState } from "react";
 import BoxHeader from "@/components/BoxHeader";
 import DashboardBox from "@/components/DashboardBox";
+import {
+  useGetMotorSpeedQuery,
+  useGetRotorSpeedQuery,
+  useGetThrustQuery,
+} from "@/state/api";
 import { Box, Typography, useTheme } from "@mui/material";
-import React from "react";
 import {
   Tooltip,
   CartesianGrid,
@@ -15,22 +20,90 @@ import {
   Legend,
 } from "recharts";
 
-const generateFakeData = (length, min, max) =>
-  Array.from({ length }, (_, index) => ({
-    name: `Month ${index + 1}`,
-    x: Math.floor(Math.random() * (max - min + 1)) + min,
-    y: Math.floor(Math.random() * (max - min + 1)) + min,
-    z: Math.floor(Math.random() * (max - min + 1)) + min, // Added third value
-  }));
-
 const Row2 = () => {
   const { palette } = useTheme();
+  const [updateCounter, setUpdateCounter] = useState(0);
 
-  // Fake data for Rotor and Motor Speed
-  const rotorMotorSpeedData = generateFakeData(12, 8000, 23000);
+  const { data: rotorData, error: rotorError, refetch: refetchRotor } =
+    useGetRotorSpeedQuery();
+  const { data: motorData, error: motorError, refetch: refetchMotor } =
+    useGetMotorSpeedQuery();
+  const { data: thrustData, error: thrustError, refetch: refetchThrust } =
+    useGetThrustQuery();
 
-  // Fake data for Forces over Time
-  const forcesOverTimeData = generateFakeData(12, 0, 100);
+  const rotorMotorSpeedData = useMemo(() => {
+    if (rotorError || motorError) {
+      console.error("Error fetching data:", rotorError || motorError);
+      return [];
+    }
+
+    if (!rotorData || !motorData) return [];
+
+    // Create a map of torqueData based on id for faster lookup
+    const rotorSpeedDataMap = new Map(
+      rotorData.map(({ id, rotorSpeed }) => [id, rotorSpeed || 0])
+    );
+
+    const MotorSpeedDataMap = new Map(
+      motorData.map(({ id, motorSpeed }) => [id, motorSpeed || 0])
+    );
+
+    console.log(motorData);
+    console.log(rotorData);
+
+    return motorData.map(({ timeStampManual, id, motorSpeed }) => {
+      const RotorSpeed = rotorSpeedDataMap.get(id) || 0;
+      const MotorSpeed = MotorSpeedDataMap.get(id) || 0;
+
+      return {
+        timeStampManual,
+        RotorSpeed,
+        MotorSpeed,
+      };
+    });
+  }, [rotorData, motorData, rotorError, motorError]);
+
+  const thrustSplitData = useMemo(() => {
+    if (thrustError) {
+      console.error("Error fetching data:", thrustError);
+      return [];
+    }
+
+    if (!thrustData) return [];
+
+    return thrustData.map(({ timeStampManual, thrust }) => {
+      const [x, y, z] = thrust;
+
+      return {
+        timeStampManual,
+        x,
+        y,
+        z,
+      };
+    });
+  }, [thrustData, thrustError]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Refetch data from APIs
+        await Promise.all([refetchRotor(), refetchMotor(), refetchThrust()]);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    const intervalId = setInterval(() => {
+      fetchData();
+      setUpdateCounter((prevCounter) => prevCounter + 1);
+    }, 1000);
+
+    // Initial fetch
+    fetchData();
+
+    return () => clearInterval(intervalId);
+  }, [refetchRotor, refetchMotor, refetchThrust]);
+
 
   return (
     <>
@@ -81,30 +154,33 @@ const Row2 = () => {
             <XAxis
               dataKey="name"
               tickLine={false}
-              style={{ fontSize: "10px" }}
+              style={{ fontSize: '10px' }}
             />
             <YAxis
               tickLine={false}
-              axisLine={{ strokeWidth: "0" }}
-              style={{ fontSize: "10px" }}
-              domain={[8000, 23000]}
+              axisLine={{ strokeWidth: '0' }}
+              style={{ fontSize: '10px' }}
             />
             <Tooltip />
             <Area
               type="monotone"
-              dataKey="x"
-              dot={true}
+              dataKey="MotorSpeed"
+              dot={false}
               stroke={palette.primary.main}
+              strokeWidth={2}
               fillOpacity={0.4}
               fill={palette.primary.main}
+              isAnimationActive={false}
             />
             <Area
               type="monotone"
-              dataKey="y"
-              dot={true}
+              dataKey="RotorSpeed"
+              dot={false}
               stroke={palette.tertiary.main}
+              strokeWidth={2}
               fillOpacity={0.4}
               fill={palette.tertiary.main}
+              isAnimationActive={false}
             />
           </AreaChart>
         </ResponsiveContainer>
@@ -120,7 +196,7 @@ const Row2 = () => {
           <LineChart
             width={500}
             height={400}
-            data={forcesOverTimeData}
+            data={thrustSplitData}
             margin={{
               top: 20,
               right: 0,
@@ -132,26 +208,26 @@ const Row2 = () => {
             <XAxis
               dataKey="name"
               tickLine={false}
-              style={{ fontSize: "10px" }}
+              style={{ fontSize: '10px' }}
             />
             <YAxis
               yAxisId="left"
               tickLine={false}
               axisLine={false}
-              style={{ fontSize: "10px" }}
+              style={{ fontSize: '10px' }}
             />
             <YAxis
               yAxisId="right"
               orientation="right"
               tickLine={false}
               axisLine={false}
-              style={{ fontSize: "10px" }}
+              style={{ fontSize: '10px' }}
             />
             <Tooltip />
             <Legend
               height={20}
               wrapperStyle={{
-                margin: "0 0 10px 0",
+                margin: '0 0 10px 0',
               }}
             />
             <Line
@@ -161,6 +237,7 @@ const Row2 = () => {
               type="monotone"
               dataKey="x"
               stroke={palette.primary[500]}
+              isAnimationActive={false}
             />
             <Line
               yAxisId="left"
@@ -169,6 +246,7 @@ const Row2 = () => {
               type="monotone"
               dataKey="y"
               stroke={palette.tertiary[500]}
+              isAnimationActive={false}
             />
             <Line
               yAxisId="left"
@@ -177,35 +255,13 @@ const Row2 = () => {
               type="monotone"
               dataKey="z"
               stroke={palette.secondary[500]}
+              isAnimationActive={false}
             />
           </LineChart>
         </ResponsiveContainer>
       </DashboardBox>
-
-      <DashboardBox gridArea="f">
-        <BoxHeader
-          title="Overall Test Routine Progress"
-          sideText=""
-        />
-        <Box
-          height="15px"
-          margin="1.25rem 1rem 0.4rem 1rem"
-          bgcolor={palette.primary[800]}
-          borderRadius="1rem"
-        >
-          <Box
-            height="15px"
-            bgcolor={palette.primary[600]}
-            borderRadius="1rem"
-            width="40%"
-          ></Box>
-        </Box>
-        <Typography margin="0 1rem" variant="h6">
-          The progress of the currently running test routine.
-        </Typography>
-      </DashboardBox>
     </>
-  );
-};
+  )
+}
 
-export default Row2;
+export default Row2

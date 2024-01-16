@@ -4,15 +4,16 @@ import Column2 from "./Column2";
 import Column3 from "./Column3";
 
 const gridTemplateLargeScreens = `
-  "a d f"
-  "a d f"
-  "a d f"
-  "b d f"
-  "b e f"
-  "b e f"
-  "c e f"
-  "c g f"
-  "c g f"
+  "a f g"
+  "a f g"
+  "a f x"
+  "b f x"
+  "b f x"
+  "b f x"
+  "b f x"
+  "c f x"
+  "c f x"
+  "c f x"
 `;
 const gridTemplateSmallScreens = `
   "a"

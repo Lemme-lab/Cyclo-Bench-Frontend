@@ -1,14 +1,15 @@
+import React, { useEffect, useMemo, useState } from "react";
 import BoxHeader from "@/components/BoxHeader";
 import DashboardBox from "@/components/DashboardBox";
 import FlexBetween from "@/components/FlexBetween";
 import {
-  useGetKpisQuery,
-  useGetProductsQuery,
-  useGetTransactionsQuery,
+  useGetTorqueQuery,
+  useGetThrustQuery,
+  useGetRotorSpeedQuery,
+  useGetWingPositionQuery,
 } from "@/state/api";
 import { Box, Typography, useTheme } from "@mui/material";
 import { DataGrid, GridCellParams } from "@mui/x-data-grid";
-import React, { useMemo } from "react";
 import {
   Cell,
   Pie,
@@ -27,132 +28,166 @@ import {
   BarChart,
   Bar,
   Area,
+  Legend,
 } from "recharts";
-
-// Static data for the DataGrid
-const staticTransactionData = [
-  { id: 1, Name: "Thrust", Data: [50,12,3], timestamp: "2023-11-26T12:30:00Z" },
-  { id: 2, Name: "Torgue", Data: 75, timestamp: "2023-11-26T12:45:00Z" },
-  { id: 3, Name: "Torgue", Data: 30, timestamp: "2023-11-26T13:00:00Z" },
-  { id: 4, Name: "WingPosition", Data: 45, timestamp: "2023-11-26T13:15:00Z" },
-  // Add more data as needed
-];
-
-// Static data for the pie chart
-const staticPieChartData = [
-  { name: "Category 1", value: 30 },
-  { name: "Category 2", value: 20 },
-  { name: "Category 3", value: 50 },
-  // Add more data as needed
-];
 
 const Row3 = () => {
   const { palette } = useTheme();
   const pieColors = [palette.primary[800], palette.primary[500]];
+  const [updateCounter, setUpdateCounter] = useState(0);
 
-  // Fake data for the pie chart
-  const pieChartData = useMemo(() => {
+  const { data: thrustData, error: thrustError, refetch: refetchThrust } =
+    useGetThrustQuery();
+  const { data: wingData, error: wingError, refetch: refetchWing } =
+    useGetWingPositionQuery();
+
+  const combinedData = useMemo(() => {
+    if (wingError || thrustError) {
+      console.error("Error fetching data:", wingData || thrustError);
+      return [];
+    }
+
+    if (!wingData || !thrustData) return [];
+
+    console.log(wingData);
+
+    // Create a map of torqueData based on id for faster lookup
+    const wingDataMap = new Map(
+      wingData.map(({ id, wingPosition }) => [id, wingPosition || 0])
+    );
+
+    return thrustData.map(({ timeStampManual, id, thrust }) => {
+      const wingPosition = wingDataMap.get(id) || 0;
+      const Thrust = thrust.reduce((sum, value) => sum + value, 0);
+
+      return {
+        timeStampManual,
+        wingPosition,
+        Thrust,
+      };
+    });
+  }, [wingData, thrustData, wingError, thrustError]);
+
+  const thrustLastData = useMemo(() => {
+    if (thrustError) {
+      console.error("Error fetching data:", thrustError);
+      return [];
+    }
+
+    if (!thrustData || thrustData.length === 0) return [];
+
+    const lastItem = thrustData[thrustData.length - 1];
+    const [x, y, z] = lastItem.thrust;
+
     return [
       [
-        { name: "X-Force", value: 25 },
-        { name: "", value: 35 },
+        { name: "X-Force", value: x },
+        { name: "", value: 200 },
       ],
       [
-        { name: "Y-Force", value: 15 },
-        { name: "", value: 35 },
+        { name: "Y-Force", value: y },
+        { name: "", value: 200 },
       ],
       [
-        { name: "Z-Force", value: 10 },
-        { name: "", value: 35 },
+        { name: "Z-Force", value: z },
+        { name: "", value: 200 },
       ],
       // Add more data as needed
     ];
-  }, []);
+  }, [thrustData, thrustError]);
 
-  const productColumns = [
-    {
-      field: "id",
-      headerName: "id",
-      flex: 1,
-    },
-    {
-      field: "name",
-      headerName: "name",
-      flex: 0.5,
-      renderCell: (params: GridCellParams) => `$${params.value}`,
-    },
-    {
-      field: "data",
-      headerName: "data",
-      flex: 0.5,
-      renderCell: (params: GridCellParams) => `$${params.value}`,
-    },
-  ];
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Refetch data from APIs
+        await Promise.all([refetchThrust(), refetchWing()]);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
 
-  const transactionColumns = [
-    {
-      field: "id",
-      headerName: "id",
-      flex: 1,
-    },
-    {
-      field: "Name",
-      headerName: "Name",
-      flex: 0.67,
-    },
-    {
-      field: "Data",
-      headerName: "Data",
-      flex: 0.35,
-      renderCell: (params: GridCellParams) => `${params.value}`,
-    },
-    {
-      field: "timestamp",
-      headerName: "Timestamp",
-      flex: 0.1,
-      renderCell: (params: GridCellParams) => params.value,
-    },
-  ];
+    const intervalId = setInterval(() => {
+      fetchData();
+      setUpdateCounter((prevCounter) => prevCounter + 1);
+    }, 1000);
+
+    // Initial fetch
+    fetchData();
+
+    return () => clearInterval(intervalId);
+  }, [refetchThrust, refetchWing]);
+  
 
   return (
     <>
       <DashboardBox gridArea="j">
         <BoxHeader
-          title="Recent Data"
-          sideText={` latest Data`}
+          title="Thrust and Wing Position"
+          subtitle=""
+          sideText=""
         />
-        <Box
-          mt="1rem"
-          p="0 0.5rem"
-          height="80%"
-          sx={{
-            "& .MuiDataGrid-root": {
-              color: palette.grey[300],
-              border: "none",
-            },
-            "& .MuiDataGrid-cell": {
-              borderBottom: `1px solid ${palette.grey[800]} !important`,
-            },
-            "& .MuiDataGrid-columnHeaders": {
-              borderBottom: `1px solid ${palette.grey[800]} !important`,
-            },
-            "& .MuiDataGrid-columnSeparator": {
-              visibility: "hidden",
-            },
-          }}
-        >
-          <DataGrid
-            columnHeaderHeight={25}
-            rowHeight={35}
-            hideFooter={true}
-            rows={staticTransactionData}
-            columns={transactionColumns}
-          />
-        </Box>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart
+            width={500}
+            height={400}
+            data={combinedData}
+            margin={{
+              top: 20,
+              right: 0,
+              left: -10,
+              bottom: 55
+            }}
+          >
+            <CartesianGrid vertical={false} stroke={palette.grey[800]} />
+            <XAxis
+              dataKey="timeStampManual"
+              tickLine={false}
+              style={{ fontSize: "10px" }}
+            />
+            <YAxis
+              yAxisId="left"
+              tickLine={false}
+              axisLine={false}
+              style={{ fontSize: "10px" }}
+            />
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              tickLine={false}
+              axisLine={false}
+              style={{ fontSize: "10px" }}
+            />
+            <Tooltip />
+            <Legend
+              height={20}
+              wrapperStyle={{
+                margin: "0 0 10px 0"
+              }}
+            />
+            <Line
+              yAxisId="left"
+              type="monotone"
+              strokeWidth={2}
+              dataKey="Thrust"
+              dot={false}
+              stroke={palette.tertiary[500]}
+              isAnimationActive={false}
+            />
+            <Line
+              yAxisId="right"
+              strokeWidth={2}
+              dot={false}
+              type="monotone"
+              dataKey="wingPosition"
+              stroke={palette.primary.main}
+              isAnimationActive={false}
+            />
+          </LineChart>
+        </ResponsiveContainer>
       </DashboardBox>
       <DashboardBox gridArea="h">
         <FlexBetween mt="0.5rem" gap="0.5rem" p="0 1rem" textAlign="center">
-          {pieChartData?.map((data, i) => (
+          {thrustLastData?.map((data, i) => (
             <Box key={`${data[0].name}-${i}`}>
               <PieChart width={110} height={100}>
                 <Pie
@@ -173,6 +208,7 @@ const Row3 = () => {
           ))}
         </FlexBetween>
       </DashboardBox>
+      
     </>
   );
 };

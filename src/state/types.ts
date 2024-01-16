@@ -1,57 +1,53 @@
-export interface ExpensesByCategory {
-  salaries: number;
-  supplies: number;
-  services: number;
+// types.js
+export interface TorqueType {
+  torque: number;
+  timeStampManual: number;
+  id: number;
 }
 
-export interface Month {
-  id: string;
-  month: string;
-  revenue: number;
-  expenses: number;
-  nonOperationalExpenses: number;
-  operationalExpenses: number;
+export interface ThrustType {
+  thrust: number[];
+  timeStampManual: number;
+  id: number;
 }
 
-export interface Day {
-  id: string;
-  date: string;
-  revenue: number;
-  expenses: number;
+export interface RotorSpeedType {
+  rotorSpeed: number;
+  timeStampManual: number;
+  id: number;
 }
 
-export interface GetKpisResponse {
-  id: string;
-  _id: string;
-  __v: number;
-  totalProfit: number;
-  totalRevenue: number;
-  totalExpenses: number;
-  expensesByCategory: ExpensesByCategory;
-  monthlyData: Array<Month>;
-  dailyData: Array<Day>;
-  createdAt: string;
-  updatedAt: string;
+export interface MotorSpeedType {
+  motorSpeed: number;
+  timeStampManual: number;
+  id: number;
 }
 
-export interface GetProductsResponse {
-  id: string;
-  _id: string;
-  __v: number;
-  price: number;
-  expense: number;
-  transactions: Array<string>;
-  createdAt: string;
-  updatedAt: string;
+export interface WingPositionsType {
+  wingPosition: number;
+  timeStampManual: number;
+  id: number;
 }
 
-export interface GetTransactionsResponse {
-  id: string;
-  _id: string;
-  __v: number;
-  buyer: string;
-  amount: number;
-  productIds: Array<string>;
-  createdAt: string;
-  updatedAt: string;
+export interface ControllDataType {
+  wingPosition: number;
+  timeStampManual: number;
+  id: number;
 }
+
+export interface MotorParameters {
+  id: number;
+  motorRun: boolean;
+  direction: number[];
+  setSpeedPercentage: number;
+  maxSpeedPercentage: number;
+  testRoutine: {
+    maxSpeed: number;
+    directionMatrix: number[];
+  }[];
+  cageOpen: boolean;
+  emergencyShutdown: boolean;
+  testBenchConnection: boolean;
+}
+
+

@@ -72,19 +72,16 @@ const Column3 = () => {
   };
 
   const handleSaveClick = (presetNumber) => {
-    // Use presets directly instead of settingsList
-    const routineData = presets.map((preset) => ({
-      rotorSpeed: parseInt(preset.rotorSpeed),
-      wingPosition: parseInt(preset.wingPosition),
+    const routineData = settingsList.map((setting) => ({
+      maxSpeed: parseInt(setting.rotorSpeed),
+      wingPosition: parseInt(setting.wingPosition),
       directionMatrix: [
-        parseFloat(preset.directionMatrix[0]),
-        parseFloat(preset.directionMatrix[1]),
-        parseFloat(preset.directionMatrix[2]),
+        parseFloat(setting.directionX),
+        parseFloat(setting.directionY),
+        parseFloat(setting.directionZ),
       ],
-      time: parseInt(preset.time),
+      time: parseInt(setting.time),
     }));
-
-    console.log(routineData);
 
     fetch(`http://localhost:3333/Controll/addRoutine`, {
       method: 'PUT',
@@ -105,57 +102,16 @@ const Column3 = () => {
       });
   };
 
-  const handleStartTestClick = async() => {
-    const testRoutineData = {
-      TestRoutine: presets.map((preset) => ({
-        rotorSpeed: parseInt(preset.rotorSpeed),
-        wingPosition: parseInt(preset.wingPosition),
-        directionMatrix: preset.directionMatrix.map(parseFloat),
-        time: parseInt(preset.time),
-      })),
-    };
-  
-    fetch("http://localhost:3333/Controll/setTestRoutine", {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(testRoutineData),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        console.log("Test routine set successfully:", data);
-      })
-      .catch((error) => {
-        console.error("Error setting test routine:", error);
-      });
-
-
-      try {
-        const response = await fetch('http://localhost:3333/Controll/startMotor', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            boolMotor: true,
-          }),
-        });
-  
-        if (response.ok) {
-          console.log('Motor status toggled successfully!');
-        } else {
-          console.error('Failed to toggle motor status');
-        }
-      } catch (error) {
-        console.error('Error toggling motor status:', error);
-      }
-      
+  const handleStartTestClick = () => {
+    // Add logic for start test button
   };
 
   const handleAddButtonClick = () => {
-    const updatedPresets = [...presets, { ...settings }];
-    setPresets(updatedPresets);
+    console.log(settingsList);
+    const updatedSettingsList = [...settingsList, { ...settings }];
+    console.log(updatedSettingsList);
+
+    setSettingsList(updatedSettingsList);
     setSettings({
       rotorSpeed: "",
       wingPosition: "",
@@ -163,27 +119,17 @@ const Column3 = () => {
       time: "",
     });
   };
-  
-  const handleInputChange = (fieldName, index) => (event) => {
-    if (fieldName === "directionMatrix") {
-      const updatedDirectionMatrix = [...settings.directionMatrix];
-      updatedDirectionMatrix[index] = event.target.value;
-      setSettings((prevSettings) => ({
-        ...prevSettings,
-        directionMatrix: updatedDirectionMatrix,
-      }));
-    } else {
-      setSettings((prevSettings) => ({
-        ...prevSettings,
-        [fieldName]: event.target.value,
-      }));
-    }
+
+  const handleInputChange = (fieldName) => (event) => {
+    setSettings({ ...settings, [fieldName]: event.target.value });
   };
 
   const handleDeleteButtonClick = (index) => {
-    const updatedPresets = [...presets];
-    updatedPresets.splice(index, 1);
-    setPresets(updatedPresets);
+    console.log(settingsList);
+    const updatedSettingsList = [...settingsList];
+    updatedSettingsList.splice(index, 1);
+    setSettingsList(updatedSettingsList);
+    console.log(settingsList);
   };
 
   return (
@@ -307,7 +253,7 @@ const Column3 = () => {
               variant="outlined"
               style={{ flex: 1, marginRight: "10px", color: "white",  paddingLeft: "10px", }}
               value={settings.directionMatrix[0]}
-              onChange={handleInputChange("directionMatrix", 0)}
+              onChange={handleInputChange("directionMatrix")}
               InputLabelProps={{
                 style: { color: "white" },
               }}
@@ -320,7 +266,7 @@ const Column3 = () => {
               variant="outlined"
               style={{ flex: 1, marginRight: "10px", color: "white" }}
               value={settings.directionMatrix[1]}
-              onChange={handleInputChange("directionMatrix", 1)}
+              onChange={handleInputChange("directionMatrix")}
               InputLabelProps={{
                 style: { color: "white" },
               }}
@@ -333,7 +279,7 @@ const Column3 = () => {
               variant="outlined"
               style={{ flex: 1, marginRight: "0px", color: "white", paddingRight: "10px",}}
               value={settings.directionMatrix[2]}
-              onChange={handleInputChange("directionMatrix", 2)}
+              onChange={handleInputChange("directionMatrix")}
               InputLabelProps={{
                 style: { color: "white" },
               }}
@@ -402,7 +348,7 @@ const Column3 = () => {
                   <strong>{`Routine ${index + 1}:`}</strong>
                 </Typography>
                 <Box style={{ background: "#333", padding: "10px", borderRadius: "5px", marginTop: "5px" }}>
-                  <Typography style={{ color: "white" }}>{`Rotor Speed: ${preset.rotorSpeed}`}</Typography>
+                  <Typography style={{ color: "white" }}>{`Max Speed: ${preset.maxSpeed}`}</Typography>
                   <Typography style={{ color: "white" }}>{`Wing Position: ${preset.wingPosition}`}</Typography>
                   <Typography style={{ color: "white" }}>{`Direction X: ${preset.directionMatrix[0]}`}</Typography>
                   <Typography style={{ color: "white" }}>{`Direction Y: ${preset.directionMatrix[1]}`}</Typography>
@@ -423,8 +369,6 @@ const Column3 = () => {
           Start Test Routine
         </Button>
       </DashboardBox>
-      
-      
     </>
   );
 };

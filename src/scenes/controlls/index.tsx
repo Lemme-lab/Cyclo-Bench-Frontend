@@ -1,3 +1,4 @@
+import React from "react";
 import { Box, useMediaQuery } from "@mui/material";
 import Column1 from "./Column1";
 import Column2 from "./Column2";

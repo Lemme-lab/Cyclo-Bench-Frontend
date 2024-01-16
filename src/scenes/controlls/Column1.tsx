@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React from "react";
+import { useState, useEffect } from 'react';
 import DashboardBox from '@/components/DashboardBox';
 import { Box, Typography, useTheme, Button } from '@mui/material';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
@@ -20,8 +21,6 @@ const Column1 = () => {
 
   const {
     data: controllData,
-    error: controllError,
-    refetch: refetchControll,
   } = useGetControllDataQuery();
 
   var value1 = 100;
@@ -92,7 +91,7 @@ const Column1 = () => {
 
   const setSpeedPercentage = async (value) => {
     try {
-      const response = await fetch('http://localhost:3333/Controll/setSpeedPercentage', {
+      const response = await fetch('http://10.68.14.105::3333/Controll/setSpeedPercentage', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -112,7 +111,7 @@ const Column1 = () => {
 
   const setMaxSpeedPercentage = async (value) => {
     try {
-      const response = await fetch('http://localhost:3333/Controll/setMaxSpeedPercentage', {
+      const response = await fetch('http://10.68.14.105:3333/Controll/setMaxSpeedPercentage', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -143,7 +142,7 @@ const Column1 = () => {
   useEffect(() => {
     const fetchInitialMotorStatus = async () => {
       try {
-        const response = await fetch('http://localhost:3333/Controll/getMotorRun');
+        const response = await fetch('http://10.68.14.105:3333/Controll/getMotorRun');
         if (response.ok) {
           const data = await response.json();
           setMotorStatus(data.motorRun);
@@ -171,7 +170,7 @@ const Column1 = () => {
 
   const startStopMotor = async () => {
     try {
-      const response = await fetch('http://localhost:3333/Controll/startMotor', {
+      const response = await fetch('http://10.68.14.105:3333/Controll/startMotor', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -194,7 +193,7 @@ const Column1 = () => {
 
   const emergencyStopMotor = async () => {
     try {
-      const response = await fetch('http://localhost:3333/Controll/setEmergencyShutdown', {
+      const response = await fetch('http://10.68.14.105:3333/Controll/setEmergencyShutdown', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -215,7 +214,7 @@ const Column1 = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:3333/Controll/startMotor', {
+      const response = await fetch('http://10.68.14.105:3333/Controll/startMotor', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -245,7 +244,7 @@ const Column1 = () => {
     console.log(directionValues);
 
     try {
-      const response = await fetch('http://localhost:3333/Controll/setDirection', {
+      const response = await fetch('http://10.68.14.105:3333/Controll/setDirection', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

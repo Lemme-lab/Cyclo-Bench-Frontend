@@ -1,3 +1,4 @@
+import React from "react";
 import BoxHeader from "@/components/BoxHeader";
 import DashboardBox from "@/components/DashboardBox";
 import {
@@ -39,7 +40,7 @@ const Column3 = () => {
 
   const fetchPresets = async (presetNumber) => {
     try {
-      const response = await fetch(`http://localhost:3333/Controll/getAllPresets`);
+      const response = await fetch(`http://10.68.14.105:3333/Controll/getAllPresets`);
       const data = await response.json();
 
       const selectedPreset = data.presets.find((preset) => preset.id === presetNumber);
@@ -86,7 +87,7 @@ const Column3 = () => {
 
     console.log(routineData);
 
-    fetch(`http://localhost:3333/Controll/addRoutine`, {
+    fetch(`http://10.68.14.105:3333/Controll/addRoutine`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -115,7 +116,7 @@ const Column3 = () => {
       })),
     };
   
-    fetch("http://localhost:3333/Controll/setTestRoutine", {
+    fetch("http://10.68.14.105:3333/Controll/setTestRoutine", {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -132,7 +133,7 @@ const Column3 = () => {
 
 
       try {
-        const response = await fetch('http://localhost:3333/Controll/startMotor', {
+        const response = await fetch('http://10.68.14.105:3333/Controll/startMotor', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',

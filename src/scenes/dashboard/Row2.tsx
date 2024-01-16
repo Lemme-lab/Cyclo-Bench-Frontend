@@ -165,7 +165,7 @@ const Row2 = () => {
             <Area
               type="monotone"
               dataKey="MotorSpeed"
-              dot={false}
+              dot={true}
               stroke={palette.primary.main}
               strokeWidth={2}
               fillOpacity={0.4}

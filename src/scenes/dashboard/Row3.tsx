@@ -9,7 +9,7 @@ import {
   useGetWingPositionQuery,
 } from "@/state/api";
 import { Box, Typography, useTheme } from "@mui/material";
-import { DataGrid, GridCellParams } from "@mui/x-data-grid";
+
 import {
   Cell,
   Pie,

@@ -23,6 +23,8 @@ import {
 } from "recharts";
 import { useGetControllDataQuery } from "@/state/api";
 
+const baseUrl = import.meta.env.VITE_BASE_URL;
+
 import LockOpenIcon from "@mui/icons-material/LockOpen";
 import FlashOffIcon from "@mui/icons-material/FlashOff";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -40,7 +42,7 @@ const Column3 = () => {
 
   const fetchPresets = async (presetNumber) => {
     try {
-      const response = await fetch(`http://localhost:3333/Controll/getAllPresets`);
+      const response = await fetch(baseUrl + `/Controll/getAllPresets`);
       const data = await response.json();
 
       const selectedPreset = data.presets.find((preset) => preset.id === presetNumber);
@@ -87,7 +89,7 @@ const Column3 = () => {
 
     console.log(routineData);
 
-    fetch(`http://localhost:3333/Controll/addRoutine`, {
+    fetch(baseUrl + `/Controll/addRoutine`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -116,7 +118,7 @@ const Column3 = () => {
       })),
     };
   
-    fetch("http://localhost:3333/Controll/setTestRoutine", {
+    fetch(baseUrl + "/Controll/setTestRoutine", {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -133,7 +135,7 @@ const Column3 = () => {
 
 
       try {
-        const response = await fetch('http://localhost:3333/Controll/startMotor', {
+        const response = await fetch(baseUrl + '/Controll/startMotor', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',

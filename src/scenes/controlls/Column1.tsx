@@ -9,6 +9,8 @@ import ShutterSpeedIcon from '@mui/icons-material/ShutterSpeed';
 import Speed from '@mui/icons-material/Speed';
 import CircularSlider from '@fseehawer/react-circular-slider';
 import { useGetControllDataQuery } from "@/state/api";
+const baseUrl = import.meta.env.VITE_BASE_URL;
+
 
 const Column1 = () => {
   const { palette } = useTheme();
@@ -91,7 +93,8 @@ const Column1 = () => {
 
   const setSpeedPercentage = async (value) => {
     try {
-      const response = await fetch('http://localhost:3333/Controll/setSpeedPercentage', {
+      VITE_BASE_URL
+      const response = await fetch(baseUrl + '/Controll/setSpeedPercentage', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -111,7 +114,7 @@ const Column1 = () => {
 
   const setMaxSpeedPercentage = async (value) => {
     try {
-      const response = await fetch('http://localhost:3333/Controll/setMaxSpeedPercentage', {
+      const response = await fetch(baseUrl + '/Controll/setMaxSpeedPercentage', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -142,7 +145,7 @@ const Column1 = () => {
   useEffect(() => {
     const fetchInitialMotorStatus = async () => {
       try {
-        const response = await fetch('http://localhost:3333/Controll/getMotorRun');
+        const response = await fetch(baseUrl + '/Controll/getMotorRun');
         if (response.ok) {
           const data = await response.json();
           setMotorStatus(data.motorRun);
@@ -170,7 +173,7 @@ const Column1 = () => {
 
   const startStopMotor = async () => {
     try {
-      const response = await fetch('http://localhost:3333/Controll/startMotor', {
+      const response = await fetch(baseUrl + '/Controll/startMotor', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -193,7 +196,7 @@ const Column1 = () => {
 
   const emergencyStopMotor = async () => {
     try {
-      const response = await fetch('http://localhost:3333/Controll/setEmergencyShutdown', {
+      const response = await fetch(baseUrl + '/Controll/setEmergencyShutdown', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -214,7 +217,7 @@ const Column1 = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:3333/Controll/startMotor', {
+      const response = await fetch(baseUrl + '/Controll/startMotor', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -244,7 +247,7 @@ const Column1 = () => {
     console.log(directionValues);
 
     try {
-      const response = await fetch('http://localhost:3333/Controll/setDirection', {
+      const response = await fetch(baseUrl + '/Controll/setDirection', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

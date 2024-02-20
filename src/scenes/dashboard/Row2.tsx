@@ -39,28 +39,27 @@ const Row2 = () => {
 
     if (!rotorData || !motorData) return [];
 
-    // Create a map of torqueData based on id for faster lookup
-    const rotorSpeedDataMap = new Map(
-      rotorData.map(({ id, rotorSpeed }) => [id, rotorSpeed || 0])
-    );
+  
 
-    const MotorSpeedDataMap = new Map(
-      motorData.map(({ id, motorSpeed }) => [id, motorSpeed || 0])
-    );
+    const combinedLength = Math.max(rotorData.length, thrustData.length);
 
-    console.log(motorData);
-    console.log(rotorData);
+    const combinedArray = [];
+    for (let i = 1; i < combinedLength; i++) {
+      const timeStampManual = i < thrustData.length ? thrustData[i].timeStampManual : null;
+      const RotorSpeed = i < rotorData.length ? rotorData[rotorData.length - i].rotorSpeed : 0;
+      const MotorSpeed = i < motorData.length ? motorData[motorData.length - i].motorSpeed : 0;
+        
+      
 
-    return motorData.map(({ timeStampManual, id, motorSpeed }) => {
-      const RotorSpeed = rotorSpeedDataMap.get(id) || 0;
-      const MotorSpeed = MotorSpeedDataMap.get(id) || 0;
-
-      return {
+      combinedArray.push({
         timeStampManual,
         RotorSpeed,
-        MotorSpeed,
-      };
-    });
+        MotorSpeed
+      });
+    }
+
+    console.log("Very Cool Data:" + combinedArray.RotorSpeed);
+    return combinedArray;
   }, [rotorData, motorData, rotorError, motorError]);
 
   const thrustSplitData = useMemo(() => {
@@ -96,7 +95,7 @@ const Row2 = () => {
     const intervalId = setInterval(() => {
       fetchData();
       setUpdateCounter((prevCounter) => prevCounter + 1);
-    }, 1000);
+    }, 200);
 
     // Initial fetch
     fetchData();
@@ -164,22 +163,22 @@ const Row2 = () => {
             <Tooltip />
             <Area
               type="monotone"
-              dataKey="MotorSpeed"
-              dot={true}
-              stroke={palette.primary.main}
-              strokeWidth={2}
-              fillOpacity={0.4}
-              fill={palette.primary.main}
-              isAnimationActive={false}
-            />
-            <Area
-              type="monotone"
               dataKey="RotorSpeed"
               dot={false}
               stroke={palette.tertiary.main}
               strokeWidth={2}
               fillOpacity={0.4}
               fill={palette.tertiary.main}
+              isAnimationActive={false}
+            />
+            <Area
+              type="monotone"
+              dataKey="MotorSpeed"
+              dot={true}
+              stroke={palette.primary.main}
+              strokeWidth={2}
+              fillOpacity={0.4}
+              fill={palette.primary.main}
               isAnimationActive={false}
             />
           </AreaChart>

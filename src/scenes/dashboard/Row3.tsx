@@ -41,60 +41,62 @@ const Row3 = () => {
   const { data: wingData, error: wingError, refetch: refetchWing } =
     useGetWingPositionQuery();
 
-  const combinedData = useMemo(() => {
-    if (wingError || thrustError) {
-      console.error("Error fetching data:", wingData || thrustError);
-      return [];
+    const combinedData = useMemo(() => {
+      if (wingError || thrustError) {
+        console.error("Error fetching data:", wingError || thrustError);
+        return [];
+      }
+  
+      if (!wingData || !thrustData) return [];
+  
+      const combinedLength = Math.max(wingData.length, thrustData.length);
+  
+      const combinedArray = [];
+      for (let i = 1; i < combinedLength; i++) {
+        const timeStampManual = i < thrustData.length ? thrustData[i].timeStampManual : null;
+        const wingPosition = i < wingData.length ? wingData[wingData.length - i].wingPosition : 0;
+        const Thrust = i < thrustData.length ? thrustData[thrustData.length - i].thrust.reduce((sum, value) => sum + value, 0) : 0;
+
+        combinedArray.push({
+            timeStampManual,
+            wingPosition,
+            Thrust
+        });
     }
-
-    if (!wingData || !thrustData) return [];
-
-    console.log(wingData);
-
-    // Create a map of torqueData based on id for faster lookup
-    const wingDataMap = new Map(
-      wingData.map(({ id, wingPosition }) => [id, wingPosition || 0])
-    );
-
-    return thrustData.map(({ timeStampManual, id, thrust }) => {
-      const wingPosition = wingDataMap.get(id) || 0;
-      const Thrust = thrust.reduce((sum, value) => sum + value, 0);
-
-      return {
-        timeStampManual,
-        wingPosition,
-        Thrust,
-      };
-    });
+  
+      return combinedArray;
   }, [wingData, thrustData, wingError, thrustError]);
-
-  const thrustLastData = useMemo(() => {
-    if (thrustError) {
-      console.error("Error fetching data:", thrustError);
-      return [];
-    }
-
-    if (!thrustData || thrustData.length === 0) return [];
-
-    const lastItem = thrustData[thrustData.length - 1];
-    const [x, y, z] = lastItem.thrust;
-
-    return [
-      [
-        { name: "X-Force", value: x },
-        { name: "", value: 200 },
-      ],
-      [
-        { name: "Y-Force", value: y },
-        { name: "", value: 200 },
-      ],
-      [
-        { name: "Z-Force", value: z },
-        { name: "", value: 200 },
-      ],
-      // Add more data as needed
-    ];
-  }, [thrustData, thrustError]);
+  
+  
+    
+    const thrustLastData = useMemo(() => {
+      if (thrustError) {
+        console.error("Error fetching data:", thrustError);
+        return [];
+      }
+    
+      if (!thrustData || thrustData.length === 0) return [];
+    
+      const lastItem = thrustData[thrustData.length - 1];
+      const [x, y, z] = lastItem.thrust;
+    
+      return [
+        [
+          { name: "X-Force", value: x },
+          { name: "", value: 200 },
+        ],
+        [
+          { name: "Y-Force", value: y },
+          { name: "", value: 200 },
+        ],
+        [
+          { name: "Z-Force", value: z },
+          { name: "", value: 200 },
+        ],
+        // Add more data as needed
+      ];
+    }, [thrustData, thrustError]);
+    
 
   useEffect(() => {
     const fetchData = async () => {
@@ -109,7 +111,7 @@ const Row3 = () => {
     const intervalId = setInterval(() => {
       fetchData();
       setUpdateCounter((prevCounter) => prevCounter + 1);
-    }, 1000);
+    }, 200);
 
     // Initial fetch
     fetchData();

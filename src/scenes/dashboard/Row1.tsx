@@ -67,7 +67,7 @@ const Row1 = () => {
     const intervalId = setInterval(() => {
       fetchData();
       setUpdateCounter((prevCounter) => prevCounter + 1);
-    }, 1000);
+    }, 200);
 
     // Initial fetch
     fetchData();
@@ -93,50 +93,55 @@ const Row1 = () => {
 
     if (!torqueData || !thrustData) return [];
 
-    // Create a map of torqueData based on id for faster lookup
-    const torqueDataMap = new Map(
-      torqueData.map(({ id, torque }) => [id, torque || 0])
-    );
-
-    return thrustData.map(({ timeStampManual, id, thrust }) => {
-      const Torque = torqueDataMap.get(id) || 0;
-      const Thrust = thrust.reduce((sum, value) => sum + value, 0);
-
-      return {
-        timeStampManual,
-        Torque,
-        Thrust
-      };
-    });
-  }, [torqueData, thrustData, torqueError, thrustError]);
-
-  const combinedData2 = useMemo(() => {
-    if (rotorError || rotorError) {
-      console.error("Error fetching data:", rotorError || rotorError);
-      return [];
+    const combinedLength = Math.max(torqueData.length, thrustData.length);
+  
+    const combinedArray = [];
+    for (let i = 1; i < combinedLength; i++) {
+        const timeStampManual = i < thrustData.length ? thrustData[i].timeStampManual : null;
+        const Torgue = i < torqueData.length ? torqueData[torqueData.length - i].torque : 0;
+        const Thrust = i < thrustData.length ? thrustData[thrustData.length - i].thrust.reduce((sum, value) => sum + value, 0) : 0;
+        console.log("Crack Torque Data:", Torgue);
+        combinedArray.push({
+            timeStampManual,
+            Torgue,
+            Thrust
+        });
     }
 
-    if (!rotorData || !thrustData) return [];
+    console.log("Se Array: ", combinedArray)
 
-    // Create a map of torqueData based on id for faster lookup
-    const rotorSpeedDataMap = new Map(
-      rotorData.map(({ id, rotorSpeed }) => [id, rotorSpeed || 0])
-    );
+    return combinedArray;
+}, [torqueData, thrustData, torqueError, thrustError]);
 
-    console.log(thrustData);
-    console.log(rotorData);
 
-    return thrustData.map(({ timeStampManual, id, thrust }) => {
-      const RotorSpeed = rotorSpeedDataMap.get(id) || 0;
-      const Thrust = thrust.reduce((sum, value) => sum + value, 0);
+const combinedData2 = useMemo(() => {
+  if (rotorError || thrustError) {
+    console.error("Error fetching data:", rotorError || thrustError);
+    return [];
+  }
 
-      return {
-        timeStampManual,
-        RotorSpeed,
-        Thrust
-      };
+  if (!rotorData || !thrustData) return [];
+
+  const combinedLength = Math.max(rotorData.length, thrustData.length);
+
+  const combinedArray = [];
+  for (let i = 1; i < combinedLength; i++) {
+    const timeStampManual = i < thrustData.length ? thrustData[i].timeStampManual : null;
+    const RotorSpeed = i < rotorData.length ? rotorData[rotorData.length - i].rotorSpeed : 0;
+    const Thrust = i < thrustData.length ? thrustData[thrustData.length - i].thrust.reduce((sum, value) => sum + value, 0) : 0;
+      
+    combinedArray.push({
+      timeStampManual,
+      RotorSpeed,
+      Thrust
     });
-  }, [torqueData, thrustData, torqueError, thrustError]);
+  }
+
+  return combinedArray;
+}, [rotorData, thrustData, rotorError, thrustError]);
+
+
+
 
 const realDataTestRoutine = useMemo(() => {
   if (!controllData || !controllData.parameters || !controllData.parameters.testRoutine) {
@@ -150,9 +155,6 @@ const realDataTestRoutine = useMemo(() => {
     rotorSpeed: item.rotorSpeed,
   }));
 }, [controllData]);
-
-  
-  
 
 
   return (
@@ -201,8 +203,8 @@ const realDataTestRoutine = useMemo(() => {
                 margin: "0 0 10px 0"
               }}
             />
-            <Line
-              yAxisId="left"
+             <Line
+              yAxisId="right"
               type="monotone"
               strokeWidth={2}
               dataKey="Thrust"
@@ -211,14 +213,15 @@ const realDataTestRoutine = useMemo(() => {
               dot={false}
             />
             <Line
-              yAxisId="right"
+              yAxisId="left"
               type="monotone"
               strokeWidth={2}
-              dataKey="Torque"
+              dataKey="Torgue"
               stroke={palette.primary.main}
               isAnimationActive={false}
               dot={false}
             />
+           
           </LineChart>
         </ResponsiveContainer>
       </DashboardBox>

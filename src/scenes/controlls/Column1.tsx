@@ -187,6 +187,25 @@ const Column1 = () => {
   }, []);
 
   useEffect(() => {
+    const fetchInitialWingposition = async () => {
+      try {
+        const response = await fetch(baseUrl + '/Controll/getWingposition');
+        if (response.ok) {
+          const data = await response.json();
+          setPosition(data.WingPosition);
+          console.log('Initial Wingpositiojn:', data.WingPosition);
+        } else {
+          console.error('Failed to fetch initial motor status');
+        }
+      } catch (error) {
+        console.error('Error fetching initial motor status:', error);
+      }
+    };
+
+    fetchInitialWingposition();
+  }, []);
+
+  useEffect(() => {
     if (controllData && counter === 0) {
       value1 = controllData.parameters.direction[0] + 100;
       value2 = controllData.parameters.direction[1] + 100;

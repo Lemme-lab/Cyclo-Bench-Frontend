@@ -18,6 +18,7 @@ const Column1 = () => {
   const [speed, setSpeed] = useState(30);
   const [maxSpeed, setMaxSpeed] = useState(30);
   const [motorStatus, setMotorStatus] = useState(false);
+  const [Wingposition, setPosition] = useState(0);
 
   var counter = 0;
 
@@ -93,7 +94,6 @@ const Column1 = () => {
 
   const setSpeedPercentage = async (value) => {
     try {
-      VITE_BASE_URL
       const response = await fetch(baseUrl + '/Controll/setSpeedPercentage', {
         method: 'PUT',
         headers: {
@@ -132,6 +132,26 @@ const Column1 = () => {
     }
   };
 
+  const setWingposition = async (value) => {
+    try {
+      const response = await fetch(baseUrl + '/Controll/setWingposition', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          WingPosition: value,
+        }),
+      });
+
+      if (!response.ok) {
+        console.error('Failed to set max speed percentage');
+      }
+    } catch (error) {
+      console.error('Error setting max speed percentage:', error);
+    }
+  };
+
   const handleMaxSpeedChange = (event: Event, newValue: number | number[]) => {
     setMaxSpeed(newValue as number);
     setMaxSpeedPercentage(newValue as number);
@@ -140,6 +160,11 @@ const Column1 = () => {
   const handleSpeedChange = (event: Event, newValue: number | number[]) => {
     setSpeed(newValue as number);
     setSpeedPercentage(newValue as number);
+  };
+
+  const handlePositionChange = (event: Event, newValue: number | number[]) => {
+    setPosition(newValue as number);
+    setWingposition(newValue as number);
   };
 
   useEffect(() => {
@@ -352,7 +377,7 @@ const Column1 = () => {
                 value={speed}
                 onChange={handleSpeedChange}
                 valueLabelDisplay="auto"
-                step={10}
+                step={5}
                 marks
                 min={10}
                 max={maxSpeed}
@@ -381,7 +406,7 @@ const Column1 = () => {
                 value={maxSpeed}
                 onChange={handleMaxSpeedChange}
                 valueLabelDisplay="auto"
-                step={10}
+                step={5}
                 marks
                 min={10}
                 max={100}
@@ -396,83 +421,57 @@ const Column1 = () => {
 
       <DashboardBox gridArea="c">
         <Typography marginTop={1} marginLeft={2} variant="h3">
-          Force into Direction
+          Set Wingposition
         </Typography>
 
         <Typography marginTop={1} marginLeft={2} variant="h4">
-          Set the direction in which the rotor will push.
+         
         </Typography>
 
         <Box
           style={{
-            flexDirection: 'row',
-            alignItems: 'center',
             display: 'flex',
-            textAlign: 'center',
+            flexDirection: 'column',
+            alignItems: 'center',
+            paddingTop: '20px',
           }}
         >
-          <Box style={{ margin: '20px 10px 0 50px', textAlign: 'center' }}>
-            <CircularSlider
-              width={130}
-              max={100}
-              min={-100}
-              label="X"
-              labelColor={palette.primary[300]}
-              knobColor={palette.primary[300]}
-              labelFontSize='1rem'
-              progressColorFrom={palette.primary[300]}
-              progressColorTo={palette.primary[300]}
-              progressSize={5}
-              trackColor="#eeeeee"
-              trackSize={5}
-              dataIndex={value1}
-              initialValue={value1}
-              direction={direction1}
-              onChange={(value) => handleDirectionChange(0, value)}
-            />
-          </Box>
-
-          <Box style={{ margin: '20px 10px 0 10px', textAlign: 'center' }}>
-            <CircularSlider
-              width={130}
-              max={100}
-              min={-100}
-              label="Y"
-              labelColor={palette.primary[300]}
-              knobColor={palette.primary[300]}
-              labelFontSize='1rem'
-              progressColorFrom={palette.primary[300]}
-              progressColorTo={palette.primary[300]}
-              progressSize={5}
-              trackColor="#eeeeee"
-              trackSize={5}
-              dataIndex={value2}
-              initialValue={value2}
-              direction={direction2}
-              onChange={(value) => handleDirectionChange(1, value)}
-            />
-          </Box>
-
-          <Box style={{ margin: '20px 10px 0 10px', textAlign: 'center' }}>
-            <CircularSlider
-              initialValue={value3}
-              dataIndex={value3}
-              max={100}
-              min={-100}
-              width={130}
-              label="Z"
-              labelColor={palette.primary[300]}
-              knobColor={palette.primary[300]}
-              labelFontSize='1rem'
-              progressColorFrom={palette.primary[300]}
-              progressColorTo={palette.primary[300]}
-              progressSize={5}
-              trackColor="#eeeeee"
-              trackSize={5}
-              direction={direction3}
-              onChange={(value) => handleDirectionChange(2, value)}
-            />
-          </Box>
+          <div
+            style={{
+              width: '80%',
+              display: 'flex',
+              alignItems: 'center',
+              marginBottom: '20px',
+            }}
+          >
+            <Speed sx={{ fontSize: 40, marginRight: '10px', color: 'white' }} />
+            <div style={{ flex: 1 }}>
+              <Typography variant="h3">Set Wingposition</Typography>
+              <Slider
+                aria-label="Temperature"
+                value={Wingposition}
+                onChange={handlePositionChange}
+                valueLabelDisplay="auto"
+                step={5}
+                marks
+                min={0}
+                max={180}
+              />
+              <Typography variant="h5" color={palette.grey[200]}>
+                {' '}
+                Set the current rotation of the wing{' '}
+              </Typography>
+            </div>
+          </div>
+          <div
+            style={{
+              width: '80%',
+              display: 'flex',
+              alignItems: 'center',
+              marginTop: '10px',
+            }}
+          >
+          </div>
         </Box>
 
         <Box

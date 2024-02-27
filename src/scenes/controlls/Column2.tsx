@@ -7,6 +7,8 @@ import CycloneIcon from '@mui/icons-material/Cyclone';
 import FlashOffIcon from '@mui/icons-material/FlashOff';
 import { useGetControllDataQuery } from '@/state/api';
 
+const baseUrl = import.meta.env.VITE_BASE_URL;
+
 const Column2 = () => {
   const { palette } = useTheme();
 
